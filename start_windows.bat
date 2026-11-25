@@ -1,9 +1,8 @@
 @echo off
 setlocal
-chcp 65001 >nul
 cd /d "%~dp0"
-title DocShift (без установки)
-echo DocShift - запуск без Flask, pip и прав администратора
+title DocShift
+echo Starting DocShift...
 echo.
 py -3 -c "import sys; assert sys.version_info >= (3,10)" >nul 2>nul
 if not errorlevel 1 (
@@ -15,8 +14,9 @@ if not errorlevel 1 (
   python app.py
   goto finished
 )
-echo ОШИБКА: Python 3.10+ не найден. Если Python в VS Code работает, запусти app.py через F5.
+echo ERROR: Python 3.10 or newer is required.
+echo If Python works in VS Code, open app.py and use Run Python File.
 :finished
 echo.
-echo Если сайт не открылся, смотри адрес и ошибки выше.
+echo If the site did not open, check the address and errors above.
 pause

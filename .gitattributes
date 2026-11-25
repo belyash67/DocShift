@@ -1,0 +1,2 @@
+# GitHub ZIP must preserve Windows batch line endings.
+start_windows.bat -text whitespace=cr-at-eol
