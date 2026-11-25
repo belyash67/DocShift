@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Процесс миграции{% endblock %}
+{% block crumb %}Новая миграция / Выполнение{% endblock %}
+{% block content %}
+<div class="heading-row"><div><span class="eyebrow">ШАГ 4 ИЗ 4 · ПЕРЕНОС</span><h1>Миграция данных</h1><p class="muted">{{ project.source_filename }} → cloud.db</p></div></div>
+<div id="migration-progress" class="panel progress-panel" data-start="{{ url_for('start', id=project.id) }}" data-status="{{ url_for('status_api', id=project.id) }}"><div class="progress-symbol">⇄</div><h2 id="phase">Подготовка миграции…</h2><p class="muted">Операции выполняются на этом компьютере. Не закрывайте приложение до завершения.</p><div class="progress-number" id="percent">0%</div><div class="progress-track"><div id="progress-fill" class="progress-fill" style="width:0%"></div></div><div class="progress-bottom"><span id="processed">0 / 0 записей</span><span>SQLite → SQLite</span></div><p id="progress-error" class="progress-error" hidden></p><a id="result-link" class="button primary" href="{{ url_for('result', id=project.id) }}" hidden>Посмотреть результат →</a></div>
+{% endblock %}

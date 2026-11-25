@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5f2">
+  <meta name="csrf-token" content="{{ csrf }}">
+  <title>{% block title %}DocShift{% endblock %} · DocShift</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/folder.js') }}"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="{{ url_for('dashboard') }}">DocShift</a>
+      <div class="nav-label">Разделы</div>
+      <nav class="navigation" aria-label="Основная навигация">
+        <a class="nav-link {% if page == 'dashboard' %}current{% endif %}" href="{{ url_for('dashboard') }}">Главная</a>
+        <a class="nav-link {% if page == 'new' %}current{% endif %}" href="{{ url_for('new_migration') }}">Новая миграция</a>
+        <a class="nav-link {% if page == 'history' %}current{% endif %}" href="{{ url_for('history') }}">История</a>
+        <a class="nav-link {% if page == 'errors' %}current{% endif %}" href="{{ url_for('all_errors') }}">Ошибки</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <a class="nav-link {% if page == 'about' %}current{% endif %}" href="{{ url_for('about') }}">О системе</a>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span>{% block crumb %}Обзор{% endblock %}</span><div class="top-status">Локальная программа</div></header>
+      <div class="content">
+        {% with flashes = get_flashed_messages(with_categories=true) %}
+          {% if flashes %}{% for kind, message in flashes %}<div role="alert" class="alert alert-{{ kind }}">{{ message }}</div>{% endfor %}{% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </div>
+      <footer class="footer">DocShift <span>Данные обрабатываются на этом компьютере</span></footer>
+    </main>
+  </div>
+</body>
+</html>

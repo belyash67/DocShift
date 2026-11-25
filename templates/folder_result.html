@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Папка перенесена{% endblock %}
+{% block crumb %}Папка / Результат{% endblock %}
+{% block content %}
+<div class="heading-row"><div><span class="eyebrow">ПАПКА → ПАПКА</span><h1>{{ 'Перенос завершён' if job.status=='done' else 'Перенос не выполнен' }}</h1><p class="muted">{{ job.source_name }} · {{ job.created_at[:16] }}</p></div><span class="pill {{ 'ok' if job.status=='done' else 'danger' }}">{{ 'Завершено' if job.status=='done' else 'Сбой' }}</span></div>
+{% if job.status != 'done' %}<div class="info-strip warning"><span>!</span><div><strong>Причина сбоя</strong><p>{{ job.error_message }}</p></div></div><div class="action-footer left-actions"><a class="button outline" href="{{ url_for('new_migration') }}">← Новая миграция</a><a class="button subtle" href="{{ url_for('history') }}">История</a></div>{% else %}
+<div class="result-banner"><span class="result-check">✓</span><div><h2 id="folder-result-title">Структура и файлы проверены</h2><p id="folder-result-caption">Сверены каталоги, пути и контрольные суммы файлов. При переносе SQLite проверены связи документов.</p></div><a class="button primary" href="{{ url_for('folder_zip', job_id=job.id) }}">↓ Скачать результат ZIP</a></div>
+<div class="stats-grid result-stats"><div class="stat-card"><span class="stat-label">Исходных файлов</span><strong>{{ job.file_count }}</strong></div><div class="stat-card"><span class="stat-label">В результате</span><strong>{{ job.output_files }}</strong></div><div class="stat-card"><span class="stat-label">Вложенных папок</span><strong>{{ details.dirs_count - 1 }}</strong></div><div class="stat-card"><span class="stat-label">Время</span><strong>{{ details.duration }} <small>с</small></strong></div></div>
+<section class="panel folder-save-panel"><h2>Сохранить в пустую папку на компьютере</h2><p class="muted" id="folder-save-help">Если вы не выбрали папку назначения до переноса, выберите её сейчас и разрешите запись. Содержимое исходной папки будет сохранено прямо в выбранную пустую папку.</p>
+<button class="button outline" type="button" id="save-folder" data-result-url="{{ url_for('folder_result', job_id=job.id) }}">▣ Выбрать папку результата и сохранить</button>
+<p id="save-folder-status" class="muted" role="status">Требуется Chrome или Edge с поддержкой выбора папки для записи.</p>
+</section>
+{% if details.db_source %}
+<section class="panel folder-save-panel"><h2>Преобразование базы</h2><p><code>{{ details.db_source }}</code> → <code>{{ details.db_target }}</code></p>
+<div class="demo-facts"><span>Всего строк: {{ details.migration.total }}</span><span>Успешно: {{ details.migration.success }}</span><span>Отклонено: {{ details.migration.failed }}</span></div>
+{% if sample %}<div class="db-comparison"><h3>Пример изменения: документ № {{ sample.legacy_id }}</h3><p class="muted">Значения из таблицы <code>old_documents</code> и соответствующей записи в <code>documents</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>В legacy.db</th><th>В cloud.db</th></tr></thead><tbody>
+<tr><td>Дата</td><td><code>{{ sample.old_date }}</code></td><td><code>{{ sample.new_date }}</code></td></tr>
+<tr><td>Статус</td><td><code>{{ sample.old_status }}</code></td><td><code>{{ sample.new_status }}</code></td></tr>
+</tbody></table></div></div>{% endif %}
+{% if details.migration.errors %}<details><summary>Показать ошибки ({{ details.migration.errors|length }})</summary><div class="table-wrap"><table><thead><tr><th>Таблица</th><th>Старый ID</th><th>Ошибка</th></tr></thead><tbody>{% for error in details.migration.errors %}<tr><td>{{ error[0] }}</td><td>{{ error[1] }}</td><td>{{ error[2] }}</td></tr>{% endfor %}</tbody></table></div></details>{% endif %}
+</section>
+{% else %}<div class="info-strip"><span>ⓘ</span><div><strong>SQLite-база не найдена</strong><p>В выбранной папке не было <code>legacy.db</code>. Все файлы и каталоги перенесены без преобразований.</p></div></div>{% endif %}
+<section class="panel folder-save-panel"><h2>Структура результата</h2><p class="muted">Показаны первые 100 элементов (полное дерево сохранено).</p><div class="folder-tree">{% for dir in details.dirs[:40] %}<div>📁 {{ dir }}/</div>{% endfor %}{% for file in details.files[:60] %}<div>📄 {{ file }}</div>{% endfor %}</div></section>
+<div class="action-footer left-actions"><a class="button outline" href="{{ url_for('new_migration') }}">← Новая миграция</a><a class="button subtle" href="{{ url_for('history') }}">История</a></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+{% block crumb %}Главная{% endblock %}
+{% block content %}
+<div class="heading-row"><div><h1>Обзор миграций</h1><p class="muted">Переносите папки с документами или отдельные базы и возвращайтесь к результатам.</p></div><a class="button primary" href="{{ url_for('new_migration') }}#folder-mode">Перенести папку</a></div>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-label"><span>Всего миграций</span><span class="stat-icon lavender">⇄</span></div><strong>{{ stats.total }}</strong><span class="stat-foot">Все запуски</span></div>
+  <div class="stat-card"><div class="stat-label"><span>Завершено</span><span class="stat-icon mint">✓</span></div><strong>{{ stats.done }}</strong><span class="stat-foot">Завершённые операции</span></div>
+  <div class="stat-card"><div class="stat-label"><span>С ошибками</span><span class="stat-icon peach">!</span></div><strong>{{ stats.with_errors }}</strong><span class="stat-foot">Завершённые с отклонёнными строками</span></div>
+  <div class="stat-card"><div class="stat-label"><span>Записей и файлов</span><span class="stat-icon blue">▤</span></div><strong>{{ stats.records }}</strong><span class="stat-foot">Успешно перенесено</span></div>
+</div>
+{% if recent_folders %}
+<section class="panel recent-folders"><div class="panel-head"><div><h2>Последние переносы папок</h2><p>Готовые результаты доступны в истории</p></div><a class="text-link" href="{{ url_for('history') }}">Вся история →</a></div>
+  <div class="table-wrap"><table><thead><tr><th>Исходная папка</th><th>Дата</th><th>Файлов</th><th>Статус</th><th></th></tr></thead><tbody>{% for folder in recent_folders %}<tr><td><strong>{{ folder.source_name }}</strong><small class="subline">{{ 'С преобразованием SQLite' if folder.has_database else 'Файловая миграция' }}</small></td><td>{{ folder.created_at[:16] }}</td><td>{{ folder.file_count }}</td><td><span class="pill {{ 'ok' if folder.status=='done' else 'danger' }}">{{ 'Завершено' if folder.status=='done' else 'Сбой' }}</span></td><td><a class="row-link" href="{{ url_for('folder_result', job_id=folder.id) }}">Открыть ↗</a></td></tr>{% endfor %}</tbody></table></div>
+</section>
+{% endif %}
+<div class="two-cols">
+  <section class="panel span-wide"><div class="panel-head"><div><h2>Последние базы SQLite</h2><p>Перенос отдельных файлов базы данных</p></div><a class="text-link" href="{{ url_for('history') }}">Вся история →</a></div>
+    {% if recent %}<div class="table-wrap"><table><thead><tr><th>Проект</th><th>Дата</th><th>Документов</th><th>Статус</th><th></th></tr></thead><tbody>
+    {% for item in recent %}<tr><td><strong>{{ item.source_filename }}</strong><small class="subline">#{{ item.id }} · SQLite</small></td><td>{{ item.created_at[:10] }}</td><td>{{ item.migrated_documents }}</td><td><span class="pill {% if item.status == 'done' %}ok{% elif item.status == 'failed' %}danger{% else %}wait{% endif %}">{{ {'done':'Завершено','failed':'Сбой','running':'В процессе','pending':'Подготовка'}.get(item.status) }}</span></td><td><a class="row-link" href="{{ url_for('result', id=item.id) if item.status in ('done','failed') else url_for('preview', id=item.id) if item.status == 'pending' else url_for('process', id=item.id) }}">Открыть ↗</a></td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<div class="empty"><div class="empty-icon">⇄</div><h3>Пока нет миграций</h3><p>Создайте первую миграцию или попробуйте готовую тестовую базу.</p><a class="button outline" href="{{ url_for('new_migration') }}">Начать работу</a></div>{% endif %}
+  </section>
+  <section class="panel guide"><div class="panel-head"><div><h2>Как перенести папку?</h2><p>Исходник остаётся без изменений</p></div></div>
+    <ol class="steps-list"><li><span>01</span><div><strong>Выберите исходную папку</strong><p>Все документы и вложенные каталоги сразу.</p></div></li><li><span>02</span><div><strong>Укажите пустую папку назначения</strong><p>Браузер запросит разрешение на запись.</p></div></li><li><span>03</span><div><strong>Начните перенос</strong><p>DocShift проверит файлы и преобразует legacy.db.</p></div></li><li><span>04</span><div><strong>Проверьте результат</strong><p>Откройте итоговую папку или скачайте ZIP.</p></div></li></ol>
+  </section>
+</div>
+{% endblock %}

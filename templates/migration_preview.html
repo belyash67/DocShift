@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Анализ базы{% endblock %}
+{% block crumb %}Новая миграция / Анализ{% endblock %}
+{% block content %}
+<div class="heading-row"><div><span class="eyebrow">ШАГ 2 ИЗ 4 · АНАЛИЗ</span><h1>Структура исходной базы</h1><p class="muted">{{ project.source_filename }} · найдено {{ tables|length }} таблиц. Выберите, что переносить.</p></div><span class="file-chip">▤ {{ project.source_filename }}</span></div>
+<form method="post" action="{{ url_for('select_tables', id=project.id) }}"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="preview-grid"><div class="panel table-select"><div class="panel-head"><div><h2>Таблицы базы</h2><p>Выберите таблицы</p></div></div><div class="select-list">
+{% for t in tables %}<div class="table-choice {% if t.name == active %}active{% endif %}"><label><input type="checkbox" name="tables" value="{{ t.name }}" {% if t.supported and not t.missing %}checked{% else %}disabled{% endif %}><span class="table-choice-text"><strong>{{ t.name }}</strong><small>{{ t.count }} записей {% if not t.supported %}· неизвестная таблица{% elif t.missing %}· нет полей: {{ t.missing|join(', ') }}{% endif %}</small></span></label><a class="inspect-link" href="{{ url_for('preview', id=project.id, table=t.name) }}" title="Просмотреть таблицу">↗</a></div>{% endfor %}
+</div></div>
+{% set current = (tables|selectattr('name','equalto',active)|list|first) if active else none %}
+<section class="panel structure"><div class="panel-head"><div><h2>{{ active or 'Нет таблиц' }}</h2><p>Структура и первые 5 записей</p></div>{% if current %}<span class="soft-tag">{{ current.count }} записей</span>{% endif %}</div>
+{% if current %}<h3 class="section-label">СТРУКТУРА ПОЛЕЙ</h3><div class="table-wrap"><table class="compact"><thead><tr><th>Поле</th><th>Тип</th><th>PK</th><th>NOT NULL</th></tr></thead><tbody>{% for col in current.columns %}<tr><td><code>{{ col.name }}</code></td><td>{{ col.type or '—' }}</td><td>{{ '✓' if col.pk else '—' }}</td><td>{{ '✓' if col.notnull else '—' }}</td></tr>{% endfor %}</tbody></table></div>
+<h3 class="section-label">ВНЕШНИЕ КЛЮЧИ</h3><p class="muted">{% if current.foreign_keys %}{% for key in current.foreign_keys %}<code>{{ key.from }}</code> → <code>{{ key.table }}.{{ key.to }}</code>{% if not loop.last %}, {% endif %}{% endfor %}{% else %}В этой таблице не объявлены.{% endif %}</p>
+<h3 class="section-label sample-label">ПРИМЕР ДАННЫХ · 5 СТРОК</h3><div class="table-wrap"><table class="compact"><thead><tr>{% for col in current.columns %}<th>{{ col.name }}</th>{% endfor %}</tr></thead><tbody>{% for row in current.sample %}<tr>{% for col in current.columns %}<td class="short-cell" title="{{ row[col.name] }}">{{ row[col.name] if row[col.name] is not none else 'NULL' }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="muted">В базе нет таблиц.</p>{% endif %}
+</section></div><div class="action-footer"><a href="{{ url_for('new_migration') }}" class="button subtle">← Назад</a><button type="submit" class="button primary">Продолжить к mapping →</button></div>
+</form>
+{% endblock %}

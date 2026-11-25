@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.runtime/
+uploads/*
+!uploads/.gitkeep
+database/app.db
+database/app.db-*
+database/generated/*
+!database/generated/.gitkeep
+database/folder_runs/
+*.log
+database/.session_secret

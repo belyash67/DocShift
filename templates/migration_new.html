@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Новая миграция{% endblock %}
+{% block crumb %}Новая миграция{% endblock %}
+{% block content %}
+<div class="flow-heading">
+  <h1>Перенести документы</h1>
+  <p class="muted">Укажите исходную папку и место для результата. Вложенные папки сохранятся; база SQLite будет преобразована, если она есть.</p>
+  <nav class="mode-shortcuts" aria-label="Способ переноса">
+    <a class="mode-shortcut" href="#folder-mode" aria-current="page">Папка с документами</a>
+    <a class="mode-shortcut" href="#sqlite-mode">Только база SQLite</a>
+  </nav>
+</div>
+
+<section class="folder-mode panel" id="folder-mode" aria-labelledby="folder-heading">
+  <div class="panel-head"><div><h2 id="folder-heading">Перенос папки</h2><p>Исходные файлы останутся на месте.</p></div></div>
+  <div class="folder-pad">
+    <div class="folder-steps">
+      <div class="folder-step-card">
+        <span class="step-index">01</span><div class="folder-step-body"><h3>Исходная папка</h3>
+        <p>Папка с документами и, если есть, <code>legacy.db</code>.</p>
+        <button type="button" id="folder-pick" class="button outline">Выбрать папку</button>
+        <input type="file" id="folder-input" webkitdirectory directory multiple hidden>
+        <p class="folder-summary" id="folder-summary" role="status">Не выбрана</p></div>
+      </div>
+      <div class="folder-step-card">
+        <span class="step-index">02</span><div class="folder-step-body"><h3>Папка назначения</h3>
+        <p>Выберите пустую папку для результата.</p>
+        <button type="button" id="folder-target-pick" class="button outline">Выбрать папку</button>
+        <p id="folder-target-summary" class="target-summary" role="status">Не выбрана. Результат также можно скачать как ZIP.</p></div>
+      </div>
+    </div>
+    <div class="folder-bottom">
+      <p class="muted">Если найдена <code>legacy.db</code>, рядом с документами появится <code>cloud.db</code>. Ошибочные записи будут показаны отдельно.</p>
+      <button id="folder-submit" type="button" class="button primary" disabled>Начать перенос</button>
+    </div>
+    <p class="folder-error" role="alert" id="folder-error" hidden></p>
+    <a id="folder-result-link" class="text-link" href="#" hidden>Открыть готовый результат →</a>
+    <details class="folder-fallback" id="folder-fallback">
+      <summary>Перенести через ZIP</summary>
+      <p>Загрузите ZIP с одной исходной папкой. Пустые каталоги тоже сохранятся; итоговый ZIP можно будет скачать после переноса.</p>
+      <form method="post" action="/folders/import-zip" enctype="multipart/form-data" class="zip-fallback">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label for="folder-zip">Архив с исходной папкой</label>
+        <input id="folder-zip" type="file" name="archive" accept=".zip,application/zip" required>
+        <button class="button outline" type="submit">Перенести ZIP</button>
+      </form>
+    </details>
+  </div>
+</section>
+
+<div class="info-strip"><div><strong>Как сохраняется результат</strong><p>Файлы появятся прямо в выбранной папке назначения с исходной структурой. Для записи нужен Chrome или Edge и разрешение браузера. Папка назначения должна быть пустой. Лимит: 2500 файлов и 150 МБ.</p></div></div>
+
+<section class="sqlite-section" id="sqlite-mode" aria-labelledby="sqlite-heading">
+  <div class="section-heading"><div><h2 id="sqlite-heading">Отдельная база SQLite</h2><p class="muted">Для одного файла .db, .sqlite или .sqlite3. Документы в этом режиме не переносятся.</p></div><a class="text-link" href="{{ url_for('folder_sample') }}">Скачать тестовую папку</a></div>
+  <div class="setup-grid">
+    <section class="panel upload-panel"><div class="panel-head"><div><h2>Перенести SQLite-базу</h2><p>Анализ таблиц, mapping, проверка записей и cloud.db</p></div><span class="soft-tag">SQLite</span></div>
+      <form id="upload-form" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data"><input type="hidden" name="csrf" value="{{ csrf }}">
+        <label class="dropzone" for="database" id="dropzone"><input type="file" id="database" name="database" accept=".db,.sqlite,.sqlite3" required><span class="drop-icon">⇧</span><strong id="file-label">Выберите файл SQLite</strong><span>или перетащите базу сюда</span><small>.db · .sqlite · .sqlite3 · до 20 МБ</small></label>
+        <div class="form-footer"><span class="muted">Исходная база остаётся неизменной.</span><button class="button primary" type="submit">Анализировать базу →</button></div>
+      </form>
+    </section>
+    <aside class="panel demo-panel"><span class="eyebrow">БЫСТРЫЙ СТАРТ</span><div class="demo-icon">◫</div><h2>Тестовая база</h2><p>Встроенная <b>legacy.db</b>: 500 документов, 40 пользователей, 8 отделов и 13 намеренных ошибок.</p><div class="demo-facts"><span>548 записей</span><span>3 таблицы</span></div><form action="{{ url_for('demo') }}" method="post"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="button outline block" type="submit">Использовать тестовую базу →</button></form></aside>
+  </div>
+</section>
+{% endblock %}
